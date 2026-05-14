@@ -1,5 +1,5 @@
-# Bot de Telegram
-python-telegram-bot==20.7
+# Bot de Telegram (job-queue incluye APScheduler para check-ins programados)
+python-telegram-bot[job-queue]==20.7
 
 # Lectura de .env
 python-dotenv==1.0.0

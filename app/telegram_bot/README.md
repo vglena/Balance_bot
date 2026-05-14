@@ -116,3 +116,39 @@ No requiere webhook ni servidor público.
 | `AUTHORIZED_TELEGRAM_USER_ID` vacío | El bot responde a cualquier usuario. Muestra advertencia en logs al arrancar. |
 | `AUTHORIZED_TELEGRAM_USER_ID` configurado, usuario coincide | El bot responde normalmente. |
 | `AUTHORIZED_TELEGRAM_USER_ID` configurado, usuario no coincide | El bot responde "No autorizado." y registra el intento en logs. No llama al LLM. |
+
+---
+
+## Proactive check-ins
+
+The bot sends an automatic message to the authorized user at two fixed times on weekdays:
+
+| Time | Purpose |
+|---|---|
+| 13:00 | Midday check-in — review morning progress and plan before pickups |
+| 18:30 | Afternoon check-in — review family situation before baths and close of day |
+
+**Active days:** Monday to Friday only. No messages on Saturday or Sunday.
+
+**Requirements:**
+- `AUTHORIZED_TELEGRAM_USER_ID` must be set. If not configured, check-ins are skipped with a warning in the logs.
+- The bot must be running at the scheduled time (polling mode). There is no persistence — if the bot is stopped, missed check-ins are not sent.
+
+**Disable check-ins temporarily:**
+
+Set `ENABLE_PROACTIVE_CHECKINS=false` in `.env` and restart the bot:
+
+```
+ENABLE_PROACTIVE_CHECKINS=false
+```
+
+To re-enable, set it back to `true` or remove the variable entirely.
+
+**Test commands (manual trigger):**
+
+| Command | What it does |
+|---|---|
+| `/test_checkin_midday` | Sends the 13:00 check-in message immediately |
+| `/test_checkin_afternoon` | Sends the 18:30 check-in message immediately |
+
+These commands are for testing only. They do not replace the automatic scheduled check-ins. Both require `AUTHORIZED_TELEGRAM_USER_ID` to match the sender — unauthorized users receive "No autorizado."

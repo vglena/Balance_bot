@@ -22,6 +22,8 @@ load_dotenv(dotenv_path=_env_path)
 from telegram.ext import Application, MessageHandler, CommandHandler, filters
 from handlers.message_handler import handle_message
 from handlers.start_handler import handle_start
+from handlers.test_checkin_handler import handle_test_checkin_midday, handle_test_checkin_afternoon
+from services.scheduler_service import register_checkins
 
 
 def main() -> None:
@@ -35,7 +37,10 @@ def main() -> None:
     bot_name = os.getenv("BOT_NAME", "bot")
     app = Application.builder().token(token).build()
     app.add_handler(CommandHandler("start", handle_start))
+    app.add_handler(CommandHandler("test_checkin_midday", handle_test_checkin_midday))
+    app.add_handler(CommandHandler("test_checkin_afternoon", handle_test_checkin_afternoon))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    register_checkins(app)
 
     print(f"[{bot_name}] Bot iniciado en modo polling. Esperando mensajes...")
     app.run_polling()

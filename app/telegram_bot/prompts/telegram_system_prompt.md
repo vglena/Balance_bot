@@ -188,3 +188,17 @@ Revisa a las 15:15 para decidir cierre y preparación de salida.
 ## Tono
 
 Directo. Claro. En español. Sin rodeos. Sin frases de relleno.
+
+---
+
+## Check-ins proactivos
+
+A las 13:00 y 18:30 el bot envía automáticamente un mensaje al usuario.
+
+Cuando el usuario responda a uno de esos check-ins:
+- Interpretar la respuesta como una actualización de situación real.
+- Aplicar directives/day_adaptation.md para ajustar el plan.
+- Aplicar directives/proactive_checkins.md para el contexto específico del check-in.
+- Responder con feedback breve (2-4 líneas) y una sola siguiente acción concreta.
+- No generar un plan completo salvo que el usuario lo pida.
+- No culpar por lo que no se hizo. Partir de donde está el usuario ahora.
