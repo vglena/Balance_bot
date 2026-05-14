@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 
 _AUTHORIZED_USER_ID = os.getenv("AUTHORIZED_TELEGRAM_USER_ID", "").strip()
 
+# Conversation history per user (in-memory, resets on bot restart)
+# Keys: user_id (str), Values: list of {"role": "user"/"assistant", "content": str}
+_CONVERSATION_HISTORY: dict[str, list[dict]] = {}
+_HISTORY_MAX_MESSAGES = 20  # 10 turns
+
 if not _AUTHORIZED_USER_ID:
     logger.warning(
         "AUTHORIZED_TELEGRAM_USER_ID no está configurado. "
@@ -45,6 +50,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if not user_message:
         return
 
+    # Maintain conversation history per user
+    history = _CONVERSATION_HISTORY.setdefault(user_id, [])
+    history.append({"role": "user", "content": user_message})
+    if len(history) > _HISTORY_MAX_MESSAGES:
+        history[:] = history[-_HISTORY_MAX_MESSAGES:]
+
     runtime_ctx = get_runtime_context()
     runtime_text = format_runtime_context(runtime_ctx)
     agent_context = load_agent_context()
@@ -69,9 +80,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             f"## Contexto del sistema\n\n{agent_context}"
         )
 
-        response = await call_llm(system_prompt=system_prompt, user_message=user_message)
+        response = await call_llm(system_prompt=system_prompt, messages=list(history))
     finally:
         typing_task.cancel()
+
+    # Add assistant response to history
+    history.append({"role": "assistant", "content": response})
 
     # Eliminar formato Markdown que Telegram no renderiza sin parse_mode
     response = response.replace("**", "").replace("__", "")

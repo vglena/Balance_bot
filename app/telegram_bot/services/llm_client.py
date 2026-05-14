@@ -5,7 +5,8 @@ import httpx
 logger = logging.getLogger(__name__)
 
 
-def _placeholder_response(user_message: str) -> str:
+def _placeholder_response(messages: list[dict]) -> str:
+    user_message = messages[-1]["content"] if messages else ""
     preview = user_message[:80] + "..." if len(user_message) > 80 else user_message
     return (
         "✅ Mensaje recibido.\n"
@@ -20,9 +21,12 @@ def _placeholder_response(user_message: str) -> str:
     )
 
 
-async def call_llm(system_prompt: str, user_message: str) -> str:
+async def call_llm(system_prompt: str, messages: list[dict]) -> str:
     """
     Llama al modelo IA configurado y devuelve la respuesta como texto.
+
+    `messages` es la lista completa del historial de conversación:
+    [{"role": "user"/"assistant", "content": "..."}]
 
     Lee la configuración en cada llamada para respetar cambios en .env
     sin necesidad de reiniciar el proceso.
@@ -33,16 +37,16 @@ async def call_llm(system_prompt: str, user_message: str) -> str:
 
     if not provider or not api_key or not model:
         logger.info("LLM no configurado — devolviendo respuesta placeholder.")
-        return _placeholder_response(user_message)
+        return _placeholder_response(messages)
 
     if provider in ("openai", "openrouter"):
-        return await _call_openai_compatible(provider, api_key, model, system_prompt, user_message)
+        return await _call_openai_compatible(provider, api_key, model, system_prompt, messages)
 
     return f"⚠️ Proveedor '{provider}' no implementado todavía."
 
 
 async def _call_openai_compatible(
-    provider: str, api_key: str, model: str, system_prompt: str, user_message: str
+    provider: str, api_key: str, model: str, system_prompt: str, messages: list[dict]
 ) -> str:
     base_urls = {
         "openai": "https://api.openai.com/v1",
@@ -58,7 +62,7 @@ async def _call_openai_compatible(
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_message},
+            *messages,
         ],
         "max_tokens": 800,
         "temperature": 0.4,

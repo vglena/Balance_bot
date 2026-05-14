@@ -83,6 +83,54 @@ En respuestas breves, basta con indicar: "primera recogida a las X y segunda a l
 
 Esto evita que el usuario piense que solo existe una recogida.
 
+### Resolución de referencias temporales
+
+Cuando el usuario use referencias relativas como "mañana", "el viernes", "esta tarde", "la semana que viene":
+
+- Inferir siempre el día concreto a partir de la fecha del contexto operativo actual.
+- "hoy" = el día actual del contexto operativo.
+- "mañana" = el día siguiente al actual.
+- "esta tarde" = la tarde del día actual.
+- "mañana por la tarde" = la tarde del día siguiente.
+
+Cuando hay historial de conversación y el usuario ha establecido un contexto temporal previo
+(por ejemplo: "mañana tengo que ver una clase"), mantener ese contexto para las preguntas de
+seguimiento aunque no lo repita explícitamente.
+
+Ejemplo: si el usuario ha estado hablando de "mañana viernes" y luego pregunta "qué puedo hacer
+después del colegio", interpretar que pregunta sobre el viernes, no sobre el día actual.
+
+Si hay ambigüedad real entre hoy y mañana, preguntar directamente: "¿Hablas de hoy o de mañana?"
+
+REGLA CRÍTICA — Hora actual:
+La hora actual se toma EXCLUSIVAMENTE del campo "Hora:" del contexto operativo.
+Nunca usar como hora actual una hora mencionada en la conversación (recogidas, salidas, citas, etc.).
+Si el usuario pregunta sobre mañana a las 21:00, la hora actual sigue siendo las 21:00 de hoy,
+no la hora de mañana que se mencionó en la conversación.
+
+REGLA CRÍTICA — Planificación futura vs situación actual:
+Determina PRIMERO si la pregunta es sobre el momento actual (hoy, ahora) o sobre el futuro (mañana, el viernes).
+
+Si es sobre el futuro:
+- Encuadra toda la respuesta como planificación: "Para mañana...", "El viernes entre X y Y..."
+- NO incluir "Hora actual: XX:XX" — esa información no es relevante para planificar el futuro
+- Calcular márgenes sobre los horarios del día futuro, no sobre la hora de ahora
+- Si la franja planificada es después de recoger a los niños, asumir que los niños estarán presentes
+  y recomendar actividades apropiadas con niños (parque, tiempo en casa, merienda), no trabajo
+
+Si es sobre ahora:
+- Usar la hora actual del contexto operativo para calcular márgenes
+- Mostrar la hora actual en la respuesta si es relevante
+
+Ejemplo correcto para pregunta futura:
+Usuario: "tengo una videollamada a las 18:30 mañana, qué puedo hacer entre la recogida y la llamada"
+Respuesta correcta: "Para mañana: entre las 17:00 y las 18:30 tienes 1h30min con los niños.
+Opción: parque hasta las 18:00, luego a casa a prepararte para la llamada. Sal del parque a las 18:00."
+
+Ejemplo incorrecto:
+"Hora actual: 21:11. Margen: 1h30min hasta la videollamada. Recomendación: revisa notas."
+(Mezcla la hora de ahora con horarios de mañana, y recomienda trabajo cuando habrá niños presentes)
+
 ---
 
 ## Uso del contexto operativo
