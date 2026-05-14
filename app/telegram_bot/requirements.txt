@@ -1,0 +1,8 @@
+# Bot de Telegram
+python-telegram-bot==20.7
+
+# Lectura de .env
+python-dotenv==1.0.0
+
+# Cliente HTTP (para llamadas a APIs de modelos IA)
+httpx==0.25.2
