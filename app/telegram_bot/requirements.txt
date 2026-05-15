@@ -6,3 +6,8 @@ python-dotenv==1.0.0
 
 # Cliente HTTP (para llamadas a APIs de modelos IA)
 httpx==0.25.2
+
+# Google Calendar API
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib

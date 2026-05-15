@@ -24,6 +24,7 @@ from handlers.message_handler import handle_message
 from handlers.start_handler import handle_start
 from handlers.test_checkin_handler import handle_test_checkin_midday, handle_test_checkin_afternoon
 from services.scheduler_service import register_checkins
+from services.reminder_service import load_pending_reminders
 
 
 def main() -> None:
@@ -41,6 +42,7 @@ def main() -> None:
     app.add_handler(CommandHandler("test_checkin_afternoon", handle_test_checkin_afternoon))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     register_checkins(app)
+    load_pending_reminders(app.job_queue)
 
     print(f"[{bot_name}] Bot iniciado en modo polling. Esperando mensajes...")
     app.run_polling()

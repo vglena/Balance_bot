@@ -152,3 +152,79 @@ To re-enable, set it back to `true` or remove the variable entirely.
 | `/test_checkin_afternoon` | Sends the 18:30 check-in message immediately |
 
 These commands are for testing only. They do not replace the automatic scheduled check-ins. Both require `AUTHORIZED_TELEGRAM_USER_ID` to match the sender — unauthorized users receive "No autorizado."
+
+---
+
+## Google Calendar — crear eventos desde Telegram
+
+El bot puede crear eventos en Google Calendar cuando el usuario escribe frases como:
+
+- "añádeme mañana a las 10 entregar documentos"
+- "crea evento el jueves a las 12 reunión con cliente"
+- "pon en calendario el 23 de mayo a las 17:30 dentista"
+- "recuérdame el viernes a las 9 llamar al cliente"
+
+Además, el bot enviará un mensaje de Telegram **2 horas antes** del evento. El recordatorio de Google Calendar no es el principal — el importante lo envía el bot.
+
+### 1. Crear proyecto en Google Cloud
+
+1. Ve a [console.cloud.google.com](https://console.cloud.google.com/).
+2. Crea un nuevo proyecto (ej: `mi-vida-bot`).
+3. En el menú lateral, ve a **APIs y servicios > Biblioteca**.
+4. Busca **Google Calendar API** y actívala.
+
+### 2. Crear credenciales OAuth
+
+1. Ve a **APIs y servicios > Credenciales**.
+2. Haz clic en **Crear credenciales > ID de cliente de OAuth**.
+3. Si se te pide configurar la pantalla de consentimiento:
+   - Tipo de usuario: **Externo** (o Interno si tienes Workspace).
+   - Rellena nombre de la app y tu email. Guarda.
+4. Tipo de aplicación: **Aplicación de escritorio**.
+5. Descarga el archivo JSON resultante.
+
+### 3. Guardar las credenciales
+
+Crea la carpeta `credentials/` en la raíz del workspace y guarda el JSON:
+
+```
+credentials/google_calendar_credentials.json
+```
+
+> ⚠️ La carpeta `credentials/` está en `.gitignore`. Nunca la subas a Git.
+
+### 4. Configurar .env
+
+Añade estas variables al `.env` de la raíz del workspace:
+
+```
+ENABLE_GOOGLE_CALENDAR=true
+GOOGLE_CALENDAR_ID=primary
+GOOGLE_CALENDAR_CREDENTIALS_PATH=credentials/google_calendar_credentials.json
+GOOGLE_CALENDAR_TOKEN_PATH=credentials/google_calendar_token.json
+
+ENABLE_TELEGRAM_EVENT_REMINDERS=true
+EVENT_REMINDER_HOURS_BEFORE=2
+```
+
+### 5. Primer uso — autorización OAuth
+
+La primera vez que el bot reciba un mensaje de calendario, abrirá el navegador para que autorices el acceso a Google Calendar. Tras aceptar, se guardará el token en:
+
+```
+credentials/google_calendar_token.json
+```
+
+A partir de ese momento el bot crea eventos directamente, sin necesidad de volver a autorizar.
+
+### 6. Recordatorios
+
+- El bot guarda los recordatorios pendientes en `context/scheduled_reminders.json`.
+- Al arrancar, carga y reprograma los recordatorios futuros automáticamente.
+- El recordatorio se envía **solo a `AUTHORIZED_TELEGRAM_USER_ID`**.
+- El mensaje que envía: `"Recordatorio: en 2 horas tienes [título]."`
+- Los recordatorios de Google Calendar están desactivados — el bot es quien avisa.
+
+### Desactivar Google Calendar temporalmente
+
+Pon `ENABLE_GOOGLE_CALENDAR=false` en `.env` y reinicia el bot. El bot responderá con un mensaje informando que la función está desactivada.

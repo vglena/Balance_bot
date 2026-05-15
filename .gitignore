@@ -2,6 +2,16 @@
 .env
 *.env
 
+# Google Calendar credentials
+credentials/
+*.token.json
+google_calendar_token.json
+google_calendar_credentials.json
+client_secret_*.json
+
+# Runtime data
+context/scheduled_reminders.json
+
 # Python
 __pycache__/
 *.py[cod]
