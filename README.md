@@ -1,4 +1,4 @@
-# Balance_bot
+# Balance bot
 
 A personal AI assistant that helps manage daily life — work, home, school pickups, and family routines. Operates via Telegram, powered by GPT-4o-mini.
 
